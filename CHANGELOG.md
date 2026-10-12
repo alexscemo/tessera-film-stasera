@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.2 - 2026-10-12
+- The tile can grow up to 2 columns by 3 rows.
+
 ## 0.2.1 - 2026-10-12
 - Adds `store.png`, the picture of the plugin on the Plugins page, made with `tools/store_image.py`. No change to the tile.
 

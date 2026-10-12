@@ -10,14 +10,14 @@ tiles:
   - tile: films
     name: Guida vecchia
     entity: sensor.film_vecchia
-    sizes: [2x2, 4x4]
+    sizes: [2x2, 2x3]
   - tile: films
     name: Nessun film
     entity: sensor.film_vuoto
-    sizes: [2x2, 4x4]
+    sizes: [2x2, 2x3]
   - tile: films
     name: Senza sensore
-    sizes: [4x4]
+    sizes: [2x3]
 
 states:
   sensor.film_stasera:

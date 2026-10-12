@@ -11,7 +11,7 @@ belongs to **one sensor of Home Assistant** and fetches nothing from the interne
    the channel's name: 1 blue, 2 amber, 3 green, 4 purple; 0 or missing draws no dot) and `stale` (true or false: the
    guide is old).
 2. Add the plugin to a screen in Tessera. The screen builds once.
-3. In Layout, place the **Films tonight** tile from the library's Plugins group (1x1 up to 4x4: it shows as many films
+3. In Layout, place the **Films tonight** tile from the library's Plugins group (1x1 up to 2x3: it shows as many films
    as fit) and choose the sensor in the inspector.
 
 ## Good to know

@@ -2,7 +2,7 @@
 # every name, label and hint below is a key into translations/<language>.json, part "app".
 # Every field is explained in docs/MANIFEST.md of the plugins repository.
 id: film_stasera
-version: 0.2.1
+version: 0.2.2
 api: "0.8"
 icon: movie-open
 maintainer: alexcoscia
@@ -24,7 +24,7 @@ tiles:
     icon: movie-open
     # From 1x1: the editor resizes one axis at a time, so a minimum above 1x1 leaves a new tile no first step (it would
     # be stuck at 1x1). One cell shows the next film; a bigger tile shows as many as fit.
-    sizes: { min: 1x1, max: 4x4 }
+    sizes: { min: 1x1, max: 2x3 }
     # Worst case, a wide tile: 2 columns of 8 rows (4 labels and a dot each, ~100 bytes a label) and up to 20 films kept.
     memory: 9000
     domains: [sensor]
