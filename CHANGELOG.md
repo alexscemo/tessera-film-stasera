@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.3 - 2026-10-12
+- Tapping the tile opens a wide, scrollable list of upcoming and currently airing films.
+
 ## 0.2.2 - 2026-10-12
 - The tile can grow up to 2 columns by 3 rows.
 

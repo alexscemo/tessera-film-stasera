@@ -13,6 +13,7 @@ belongs to **one sensor of Home Assistant** and fetches nothing from the interne
 2. Add the plugin to a screen in Tessera. The screen builds once.
 3. In Layout, place the **Films tonight** tile from the library's Plugins group (1x1 up to 2x3: it shows as many films
    as fit) and choose the sensor in the inspector.
+4. Tap the tile to open the full, scrollable list of upcoming and currently airing films.
 
 ## Good to know
 

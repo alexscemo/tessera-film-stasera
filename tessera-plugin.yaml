@@ -2,7 +2,7 @@
 # every name, label and hint below is a key into translations/<language>.json, part "app".
 # Every field is explained in docs/MANIFEST.md of the plugins repository.
 id: film_stasera
-version: 0.2.2
+version: 0.2.3
 api: "0.8"
 icon: movie-open
 maintainer: alexcoscia
@@ -34,3 +34,6 @@ tiles:
     example: tile_example
     # How the editor draws it: the sensor's name and its state (the number of films).
     preview: { title: "{name}", value: "{state}" }
+
+cards:
+  - { id: movies, name: card_name, wide: true }

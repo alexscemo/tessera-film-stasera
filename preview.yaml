@@ -31,37 +31,15 @@ states:
         - The Italian Job
         - Il club delle prime mogli
         - Maigret e le lettere anonime
-        - The Gentleman
-        - Fuochi d'artificio
-        - I laureati
-        - Non siamo soli (2022)
-        - Poirot: La parola alla difesa
-        - Giustizia a tutti i costi
-        - Nightmare - Dal Profondo della notte
-        - Palermo Milano - Solo andata
-        - No Sudden Move
-        - Io prima di te
-        - Stag. 2026 - Sul cammino di Francesco - La vita di Biagio Conte
-      channels: [Iris, Rai Movie, "20", La7, Top Crime, Rai 4, Cine34, NOVE, Rai 4, Top Crime, "20", Italia 2, Rai Movie, Iris, TV8, Rai 1]
-      groups: [2, 1, 2, 4, 2, 1, 2, 3, 1, 2, 2, 2, 1, 2, 4, 1]
+      channels: [Iris, Rai Movie, "20", La7, Top Crime]
+      groups: [2, 1, 2, 4, 2]
       starts:
         - "{epoch-40m}"
         - "{epoch+10m}"
         - "{epoch+25m}"
         - "{epoch+1h}"
         - "{epoch+75m}"
-        - "{epoch+90m}"
-        - "{epoch+105m}"
-        - "{epoch+2h}"
-        - "{epoch+135m}"
-        - "{epoch+150m}"
-        - "{epoch+165m}"
-        - "{epoch+3h}"
-        - "{epoch+195m}"
-        - "{epoch+210m}"
-        - "{epoch+4h}"
-        - "{epoch+270m}"
-      genres: [Poliziesco, Thriller, Azione, Commedia, Poliziesco, "", Commedia, Commedia, "", Thriller, Drammatico, Horror, "", Poliziesco, Drammatico, Biografico]
+      genres: [Poliziesco, Thriller, Azione, Commedia, Poliziesco]
   sensor.film_vecchia:
     state: "2"
     attributes:
@@ -81,3 +59,6 @@ states:
       channels: []
       starts: []
       genres: []
+
+cards:
+  - { card: movies, entity: sensor.film_stasera }
