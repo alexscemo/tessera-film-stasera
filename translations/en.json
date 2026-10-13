@@ -5,7 +5,8 @@
     "none": "No more films tonight",
     "waiting": "Waiting for the guide",
     "choose_sensor": "Choose the film sensor",
-    "old": "Old guide"
+    "old": "Old guide",
+    "more": "1 more film | {n} more films"
   },
   "app": {
     "name": "Films tonight",

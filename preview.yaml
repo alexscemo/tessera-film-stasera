@@ -1,5 +1,5 @@
 # What tools/preview.py shows (docs/PREVIEW.md of the plugins repository): the sensor of tonight's films, as Home
-# Assistant has it, with a film that has started and the ones after it; a guide that is old; no film left; and the
+# Assistant has it, with a film that has started and the fifteen after it; a guide that is old; no film left; and the
 # tile before a sensor is chosen. Moments are made from the time of the render ("{epoch+25m}" is in 25 minutes).
 time_zone: Europe/Rome
 
@@ -31,15 +31,37 @@ states:
         - The Italian Job
         - Il club delle prime mogli
         - Maigret e le lettere anonime
-      channels: [Iris, Rai Movie, "20", La7, Top Crime]
-      groups: [2, 1, 2, 4, 2]
+        - Il nome della rosa
+        - Mission Impossible
+        - La vita è bella
+        - Il diavolo veste Prada
+        - Interstellar
+        - Nuovo Cinema Paradiso
+        - Arma letale
+        - Il sorpasso
+        - Inception
+        - Fargo
+        - Amici miei
+      channels: [Iris, Rai Movie, "20", La7, Top Crime, Rai 3, Italia 1, Rai 1, Canale 5, Rai 4, Cine34, Rete 4, Rai Movie, Nove, Rai 4, Cine34]
+      groups: [2, 1, 2, 4, 2, 1, 2, 1, 2, 1, 2, 2, 1, 3, 1, 2]
       starts:
         - "{epoch-40m}"
         - "{epoch+10m}"
         - "{epoch+25m}"
         - "{epoch+1h}"
         - "{epoch+75m}"
-      genres: [Poliziesco, Thriller, Azione, Commedia, Poliziesco]
+        - "{epoch+80m}"
+        - "{epoch+85m}"
+        - "{epoch+90m}"
+        - "{epoch+95m}"
+        - "{epoch+100m}"
+        - "{epoch+105m}"
+        - "{epoch+3h}"
+        - "{epoch+190m}"
+        - "{epoch+200m}"
+        - "{epoch+210m}"
+        - "{epoch+220m}"
+      genres: [Poliziesco, Thriller, Azione, Commedia, Poliziesco, Giallo, Azione, Commedia, Commedia, Fantascienza, Drammatico, Azione, Commedia, Fantascienza, Thriller, Commedia]
   sensor.film_vecchia:
     state: "2"
     attributes:

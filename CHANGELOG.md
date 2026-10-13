@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.4 - 2026-10-13
+- The card no longer scrolls, which made it slow: the films are laid out on the card in columns (up to three on a wide
+  screen), and when more are left than fit, the line on top says how many.
+- The card shows the films also when the guide is old, with "Old guide" on top instead of only the words.
+- The tile and the card no longer measure and lay out every row each second: only when a film ends or the guide changes.
+- A title cut short no longer breaks an accented letter.
+
 ## 0.2.3 - 2026-10-12
 - Tapping the tile opens a wide, scrollable list of upcoming and currently airing films.
 

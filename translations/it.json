@@ -5,7 +5,8 @@
     "none": "Nessun altro film stasera",
     "waiting": "In attesa della guida",
     "choose_sensor": "Scegli il sensore dei film",
-    "old": "Guida vecchia"
+    "old": "Guida vecchia",
+    "more": "Ancora 1 film | Altri {n} film"
   },
   "app": {
     "name": "Film stasera",
