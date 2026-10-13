@@ -12,6 +12,7 @@ a **un sensore di Home Assistant** e non scarica niente da internet.
 2. Aggiungi il plugin a uno schermo in Tessera. Lo schermo si ricompila una volta.
 3. In Layout metti il tile **Film stasera** dalla libreria (gruppo Plugin), da 1x1 a 2x3: mostra tutti i film che
    ci stanno. Poi scegli il sensore nell'ispettore.
+4. Tocca il tile per aprire l'elenco scorribile dei film in programma o ancora in onda.
 
 ## Da sapere
 

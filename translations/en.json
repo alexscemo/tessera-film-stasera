@@ -11,6 +11,7 @@
     "name": "Films tonight",
     "summary": "The films on Italian TV tonight, from a sensor in Home Assistant.",
     "tile_name": "Films tonight",
+    "card_name": "Films tonight",
     "tile_example": "21:00 Cine34 - a film"
   }
 }

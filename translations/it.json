@@ -11,6 +11,7 @@
     "name": "Film stasera",
     "summary": "I film in TV stasera in Italia, da un sensore di Home Assistant.",
     "tile_name": "Film stasera",
+    "card_name": "Film stasera",
     "tile_example": "21:00 Cine34 - un film"
   }
 }
