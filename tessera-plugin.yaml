@@ -2,7 +2,7 @@
 # every name, label and hint below is a key into translations/<language>.json, part "app".
 # Every field is explained in docs/MANIFEST.md of the plugins repository.
 id: film_stasera
-version: 0.3.0
+version: 0.3.1
 api: "0.8"
 icon: movie-open
 maintainer: alexcoscia
@@ -22,7 +22,7 @@ permissions:
 
 tiles:
   # A tile that belongs to one sensor of Home Assistant: sensor.film_stasera, with the films of tonight as four lists
-  # of the same length (titles, channels, starts as seconds since 1970, genres, and groups: a number 1 to 4 for the colour of each channel's dot). It draws one row per film, as many as
+  # of the same length (titles, channels, starts as seconds since 1970, and groups: a number 1 to 4 for the colour of each channel's dot). It draws one row per film, as many as
   # fit, and nothing is fetched from the internet: Home Assistant makes the sensor (see the README).
   - id: films
     name: tile_name
@@ -30,10 +30,10 @@ tiles:
     # From 1x1: the editor resizes one axis at a time, so a minimum above 1x1 leaves a new tile no first step (it would
     # be stuck at 1x1). One cell shows the next film; a bigger tile shows as many as fit.
     sizes: { min: 1x1, max: 2x3 }
-    # Worst case, a wide tile: 2 columns of 8 rows (4 labels and a dot each, ~100 bytes a label) and up to 40 films kept.
-    memory: 11500
+    # Worst case, a wide tile: 2 columns of 8 rows (3 labels and a dot each, ~100 bytes a label) and up to 40 films kept.
+    memory: 10000
     domains: [sensor]
-    attributes: [titles, channels, starts, genres, groups, stale]
+    attributes: [titles, channels, starts, groups, stale]
     # Offer only a sensor that has these two lists, not every sensor in the house.
     has_attributes: [titles, starts]
     example: tile_example

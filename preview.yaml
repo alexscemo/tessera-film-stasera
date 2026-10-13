@@ -61,7 +61,6 @@ states:
         - "{epoch+200m}"
         - "{epoch+210m}"
         - "{epoch+220m}"
-      genres: [Poliziesco, Thriller, Azione, Commedia, Poliziesco, Giallo, Azione, Commedia, Commedia, Fantascienza, Drammatico, Azione, Commedia, Fantascienza, Thriller, Commedia]
   sensor.film_vecchia:
     state: "2"
     attributes:
@@ -71,7 +70,6 @@ states:
       channels: [Rai Movie, Rai 4]
       groups: [1, 1]
       starts: ["{epoch+30m}", "{epoch+80m}"]
-      genres: [Thriller, ""]
   sensor.film_vuoto:
     state: "0"
     attributes:
@@ -80,7 +78,6 @@ states:
       titles: []
       channels: []
       starts: []
-      genres: []
 
 # What Home Assistant's script film_stasera_day answers the card for another day of the week.
 commands:
@@ -90,7 +87,6 @@ commands:
     channels: [Arc Cinema Preston, Vue Preston, Arc Cinema Preston, Vue Preston]
     groups: [1, 2, 1, 2]
     starts: ["{epoch+1d}", "{epoch+25h}", "{epoch+26h}", "{epoch+27h}"]
-    genres: ["", "", "", ""]
 
 cards:
   - { card: movies, entity: sensor.film_stasera }

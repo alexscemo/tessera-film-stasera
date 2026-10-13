@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.1 - 2026-10-13
+- The genre is gone: under each title only the channel, which now has the whole line. The sensor's `genres` is no
+  longer read, so you can drop it (and its line in the script `film_stasera_day`).
+- The tile needs a little less room in the screen's layout memory (10000 instead of 11500 bytes).
+
 ## 0.3.0 - 2026-10-13
 - The card can show the whole week: after the last page of a day it turns to the next day, up to six days ahead, and
   then back to today. The line on top says the day and the page. Back on another day returns to today.

@@ -10,7 +10,7 @@ namespace ui = tessera::ui;
 
 // One film as Home Assistant's sensor has it: four lists of the same length, one entry per film (README.md).
 struct Film {
-  std::string title, channel, genre;
+  std::string title, channel;
   uint32_t at = 0;   // when it starts, seconds since 1970
   int group = 0;     // the channel's group (1 to 4, 0 for none): the colour of the dot before its name
 };
@@ -49,13 +49,11 @@ struct Guide {
     JsonArrayConst titles = a["titles"].as<JsonArrayConst>();
     JsonArrayConst channels = a["channels"].as<JsonArrayConst>();
     JsonArrayConst starts = a["starts"].as<JsonArrayConst>();
-    JsonArrayConst genres = a["genres"].as<JsonArrayConst>();
     JsonArrayConst groups = a["groups"].as<JsonArrayConst>();
     for (size_t i = 0; i < titles.size() && films.size() < MAX_FILMS; ++i) {
       Film f;
       f.title = std::string(titles[i] | "");
       f.channel = std::string(channels[i] | "");
-      f.genre = std::string(genres[i] | "");
       f.at = starts[i] | 0u;
       f.group = groups[i] | 0;
       if (f.at && !f.title.empty()) films.push_back(std::move(f));
@@ -120,9 +118,9 @@ static int when_width(const std::vector<Film> &films, size_t first, size_t count
 }
 
 // A film's row: the start time, beside it the title, and under the title the channel's name with a dot in the colour of
-// its group and the genre. The tile and the card draw the same row.
+// its group. The tile and the card draw the same row.
 struct Row {
-  lv_obj_t *when{}, *title{}, *dot{}, *chan{}, *sub{};
+  lv_obj_t *when{}, *title{}, *dot{}, *chan{};
   int x = 0, y = 0;
 
   void make(lv_obj_t *parent, int at_x, int at_y) {
@@ -132,22 +130,19 @@ struct Row {
     title = ui::label(parent, Font::BODY_LARGE, theme::INK);
     dot = ui::block(parent, theme::MARK_BLUE);
     chan = ui::label(parent, Font::BODY, theme::INK);
-    sub = ui::label(parent, Font::BODY, theme::MUTED);
     lv_label_set_long_mode(title, LV_LABEL_LONG_CLIP);
     lv_label_set_long_mode(chan, LV_LABEL_LONG_CLIP);
-    lv_label_set_long_mode(sub, LV_LABEL_LONG_CLIP);
   }
 
   void paint_colors(int group) {
     ui::set_color(when, theme::INK);
     ui::set_color(title, theme::INK);
     ui::set_color(chan, theme::INK);
-    ui::set_color(sub, theme::MUTED);
     lv_obj_set_style_opa(dot, group > 0 ? LV_OPA_COVER : LV_OPA_TRANSP, 0);
     if (group > 0) lv_obj_set_style_bg_color(dot, ui::color(group_role(group)), 0);
   }
 
-  // The time in a column of `when_w`, the title beside it and under the title the channel and the genre (`film`; null
+  // The time in a column of `when_w`, the title beside it and under the title the channel (`film`; null
   // for a message, which has only the title), in a row `row_w` wide whose first line is `line` high. A message takes
   // the title's place from the row's left edge. Nothing to show: everything empty.
   void place(const std::string &time, const std::string &text, const Film *film, int when_w, int row_w, int line) {
@@ -159,25 +154,19 @@ struct Row {
     ui::set_text(title, fit_text(text, w, Font::BODY_LARGE));
     lv_obj_set_size(title, w, ui::line_height(Font::BODY_LARGE));
     lv_obj_set_pos(title, x + tw, y + (line - ui::line_height(Font::BODY_LARGE)) / 2);
-    // The second line: [dot] Channel . Genre
+    // The second line: [dot] Channel
     const int lh = ui::line_height(Font::BODY), y2 = y + line;
     const std::string channel = film ? film->channel : std::string();
-    const std::string genre = film && !film->genre.empty() ? "· " + film->genre : std::string();
     const int group = film ? film->group : 0;
     const int d = std::min(w, std::max(ui::px(7), lh * 6 / 10));
     const int dot_w = group > 0 ? std::min(w, d + ui::px(6)) : 0;
     paint_colors(group);
     lv_obj_set_size(dot, std::max(1, d), std::max(1, d));
     lv_obj_set_pos(dot, x + tw, y2 + (lh - d) / 2);
-    const int chan_w =
-        std::min(w - dot_w, channel.empty() ? 0 : ui::text_width(channel, Font::BODY) + ui::px(2));
-    ui::set_text(chan, fit_text(channel, std::max(1, chan_w), Font::BODY));
-    lv_obj_set_size(chan, std::max(1, chan_w), lh);
+    const int chan_w = std::max(1, w - dot_w);
+    ui::set_text(chan, fit_text(channel, chan_w, Font::BODY));
+    lv_obj_set_size(chan, chan_w, lh);
     lv_obj_set_pos(chan, x + tw + dot_w, y2);
-    const int gx = std::min(w, dot_w + chan_w + (chan_w > 0 ? ui::px(6) : 0));
-    ui::set_text(sub, fit_text(genre, std::max(1, w - gx), Font::BODY));
-    lv_obj_set_size(sub, std::max(1, w - gx), lh);
-    lv_obj_set_pos(sub, x + tw + gx, y2);
   }
 };
 
@@ -350,7 +339,7 @@ class FilmsCard : public tessera::Card {
     return true;
   }
 
-  // The answer for a day: {"re", "ok", "result": {"titles": [...], "channels", "starts", "genres", "groups"}}.
+  // The answer for a day: {"re", "ok", "result": {"titles": [...], "channels", "starts", "groups"}}.
   void answer(JsonObjectConst message) {
     if (!asked_ || (message["re"] | 0u) != asked_) return;
     asked_ = 0;

@@ -5,8 +5,8 @@ a **un sensore di Home Assistant** e non scarica niente da internet.
 
 ## Come si usa
 
-1. In Home Assistant crea il sensore `sensor.film_stasera`: lo stato e' il numero di film, con quattro attributi
-   della stessa lunghezza, una voce per film: `titles`, `channels`, `starts` (secondi dal 1970) e `genres`. Facoltativi: `groups` (un numero da 1 a 4 per film, il colore del pallino
+1. In Home Assistant crea il sensore `sensor.film_stasera`: lo stato e' il numero di film, con tre attributi
+   della stessa lunghezza, una voce per film: `titles`, `channels` e `starts` (secondi dal 1970). Facoltativi: `groups` (un numero da 1 a 4 per film, il colore del pallino
    davanti al nome del canale: 1 blu, 2 ambra, 3 verde, 4 viola; 0 o assente: nessun pallino) e `stale` (true o
    false: la guida e' vecchia).
 2. Aggiungi il plugin a uno schermo in Tessera. Lo schermo si ricompila una volta.
@@ -53,7 +53,6 @@ script:
             titles: "{{ state_attr(sensor, 'titles') or [] }}"
             channels: "{{ state_attr(sensor, 'channels') or [] }}"
             starts: "{{ state_attr(sensor, 'starts') or [] }}"
-            genres: "{{ state_attr(sensor, 'genres') or [] }}"
             groups: "{{ state_attr(sensor, 'groups') or [] }}"
       - stop: The films of the day
         response_variable: films

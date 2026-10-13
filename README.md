@@ -1,13 +1,13 @@
 # Films tonight
 
-A tile with the films on Italian TV tonight: the start time, the title, and under it the channel and the genre. It
+A tile with the films on Italian TV tonight: the start time, the title, and under it the channel. It
 belongs to **one sensor of Home Assistant** and fetches nothing from the internet itself.
 
 ## Set up
 
 1. In Home Assistant, make the sensor `sensor.film_stasera` (the one this plugin was written for): a sensor whose
-   state is the number of films, with four attributes of the same length, one entry per film: `titles`, `channels`,
-   `starts` (seconds since 1970) and `genres`. Optional: `groups` (a number 1 to 4 per film, the colour of the dot before
+   state is the number of films, with three attributes of the same length, one entry per film: `titles`, `channels`
+   and `starts` (seconds since 1970). Optional: `groups` (a number 1 to 4 per film, the colour of the dot before
    the channel's name: 1 blue, 2 amber, 3 green, 4 purple; 0 or missing draws no dot) and `stale` (true or false: the
    guide is old).
 2. Add the plugin to a screen in Tessera. The screen builds once.
@@ -52,7 +52,6 @@ script:
             titles: "{{ state_attr(sensor, 'titles') or [] }}"
             channels: "{{ state_attr(sensor, 'channels') or [] }}"
             starts: "{{ state_attr(sensor, 'starts') or [] }}"
-            genres: "{{ state_attr(sensor, 'genres') or [] }}"
             groups: "{{ state_attr(sensor, 'groups') or [] }}"
       - stop: The films of the day
         response_variable: films
