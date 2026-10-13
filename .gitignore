@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 tools/preston_cinemas.py
 tools/output.json
+tools/home_assistant.json
