@@ -6,6 +6,7 @@
     "waiting": "In attesa della guida",
     "choose_sensor": "Scegli il sensore dei film",
     "old": "Guida vecchia",
+    "none_day": "Nessun film in questo giorno",
     "page": "Pagina {page} di {pages}"
   },
   "app": {

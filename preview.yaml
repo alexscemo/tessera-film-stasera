@@ -82,5 +82,15 @@ states:
       starts: []
       genres: []
 
+# What Home Assistant's script film_stasera_day answers the card for another day of the week.
+commands:
+  "call_service:script.film_stasera_day":
+    date: "2026-10-14"
+    titles: [The Social Reckoning, Moana, Coyote vs Acme, Minions & Monsters]
+    channels: [Arc Cinema Preston, Vue Preston, Arc Cinema Preston, Vue Preston]
+    groups: [1, 2, 1, 2]
+    starts: ["{epoch+1d}", "{epoch+25h}", "{epoch+26h}", "{epoch+27h}"]
+    genres: ["", "", "", ""]
+
 cards:
   - { card: movies, entity: sensor.film_stasera }

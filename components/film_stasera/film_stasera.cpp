@@ -18,9 +18,13 @@ struct Film {
 // A film that started less than this long ago is still on, so it stays on the tile. The guide has no end times.
 static constexpr uint32_t ON_AIR_SECONDS = 150 * 60;
 static constexpr int MAX_PER_COLUMN = 8;
-static constexpr size_t MAX_FILMS = 20;
+static constexpr size_t MAX_FILMS = 40;
 // How long the card shows a page of films before it turns to the next one, when they do not fit on one page.
 static constexpr uint32_t PAGE_SECONDS = 8;
+// The card's week: today and the days after it, asked of Home Assistant one at a time (README.md, "The whole week").
+static constexpr int WEEK_DAYS = 7;
+static constexpr uint32_t ANSWER_SECONDS = 10;   // no answer by then: the week is not there, the card stays on today
+static constexpr const char *DAY_COMMAND = "call_service:script.film_stasera_day";
 
 // What the sensor says, read the same way by the tile and the card.
 struct Guide {
@@ -29,8 +33,19 @@ struct Guide {
   std::string wait;
 
   void read(JsonObjectConst data) {
-    films.clear();
     JsonObjectConst a = data["attributes"];
+    read_lists(a);
+    // Before a person has chosen the sensor the tile gets {}; a sensor without a value says unavailable or unknown.
+    has_entity = !data["state"].isNull();
+    const std::string state = std::string(data["state"] | "");
+    no_value = state == "unavailable" || state == "unknown";
+    stale = a["stale"] | false;
+    wait = std::string(data["wait"] | "");
+  }
+
+  // The films of the lists in `a`: a sensor's attributes, or the answer for one day of the week.
+  void read_lists(JsonObjectConst a) {
+    films.clear();
     JsonArrayConst titles = a["titles"].as<JsonArrayConst>();
     JsonArrayConst channels = a["channels"].as<JsonArrayConst>();
     JsonArrayConst starts = a["starts"].as<JsonArrayConst>();
@@ -46,12 +61,6 @@ struct Guide {
       if (f.at && !f.title.empty()) films.push_back(std::move(f));
     }
     std::sort(films.begin(), films.end(), [](const Film &x, const Film &y) { return x.at < y.at; });
-    // Before a person has chosen the sensor the tile gets {}; a sensor without a value says unavailable or unknown.
-    has_entity = !data["state"].isNull();
-    const std::string state = std::string(data["state"] | "");
-    no_value = state == "unavailable" || state == "unknown";
-    stale = a["stale"] | false;
-    wait = std::string(data["wait"] | "");
   }
 
   // The first film still worth showing (not over yet). The films are in order of start, so the ones from here on are
@@ -276,15 +285,21 @@ class FilmsTile : public tessera::Tile {
   Guide guide_;
 };
 
-// The card: the films still to come on a fixed grid as large as the card, in up to three columns that fill one after
-// the other, with a line on top that says the guide is old and which page shows. Nothing scrolls: when the films do not
-// fit on one page, the card turns to the next page every PAGE_SECONDS and starts again after the last (a card takes no
-// taps). The rows are laid out again only when what they show changes, not on every tick of the clock.
+// The card: the films of a day on a fixed grid as large as the card, in up to three columns that fill one after the
+// other, with a line on top that says which day and page it shows. Nothing scrolls, and a card takes no taps: it turns
+// to the next page every PAGE_SECONDS, after the last page of a day to the next day, and after the seventh day back to
+// today. Today's films are the tile's; each other day is asked of Home Assistant when its turn comes, through the
+// script film_stasera_day. Without that script the card stays on today. Back on another day returns to today, Back on
+// today closes the card. The rows are laid out again only when what they show changes.
 class FilmsCard : public tessera::Card {
  public:
-  explicit FilmsCard(const tessera::Plugin *plugin) : plugin_(plugin) {}
+  explicit FilmsCard(FilmStasera *plugin) : plugin_(plugin) {}
+  ~FilmsCard() override {
+    if (plugin_->open_card_ == this) plugin_->open_card_ = nullptr;
+  }
 
   void open(const tessera::CardContext &c) override {
+    plugin_->open_card_ = this;
     width_ = c.width;
     const int gap = ui::px(ui::large() ? 8 : 5);
     line_ = std::max(ui::line_height(Font::TITLE), ui::line_height(Font::BODY_LARGE));
@@ -307,16 +322,18 @@ class FilmsCard : public tessera::Card {
 
   void on_state(JsonObjectConst data) override {
     guide_.read(data);
-    dirty_ = true;
+    if (day_ == 0) dirty_ = true;
     render();
   }
 
   void on_tick(uint32_t now) override {
     now_ = now;
-    if (pages_ > 1 && now && now - page_at_ >= PAGE_SECONDS) {
-      page_ = (page_ + 1) % pages_;
-      page_at_ = now;
-      dirty_ = true;
+    if (!page_at_) page_at_ = now;   // the first page gets its whole time from the first tick with a clock
+    if (asked_ && now - asked_at_ >= ANSWER_SECONDS) {
+      week_ = false;   // Home Assistant did not answer: stay on today
+      show_day(0);
+    } else if (!asked_ && now && now - page_at_ >= PAGE_SECONDS) {
+      next();
     }
     render();
   }
@@ -326,55 +343,121 @@ class FilmsCard : public tessera::Card {
     render();
   }
 
+  bool on_back() override {
+    if (day_ == 0) return false;
+    show_day(0);
+    render();
+    return true;
+  }
+
+  // The answer for a day: {"re", "ok", "result": {"titles": [...], "channels", "starts", "genres", "groups"}}.
+  void answer(JsonObjectConst message) {
+    if (!asked_ || (message["re"] | 0u) != asked_) return;
+    asked_ = 0;
+    if (!(message["ok"] | false)) {
+      week_ = false;   // no script film_stasera_day, or it failed: stay on today
+      show_day(0);
+    } else {
+      day_guide_.read_lists(message["result"]);
+      page_ = 0;
+      page_at_ = now_;   // the day's first page gets its whole time from now
+      dirty_ = true;
+    }
+    render();
+  }
+
  private:
+  // The next page of the day, else the next day (only today while the week is not there).
+  void next() {
+    page_at_ = now_;
+    if (page_ + 1 < pages_) {
+      ++page_;
+      dirty_ = true;
+    } else if (week_) {
+      show_day((day_ + 1) % WEEK_DAYS);
+    } else if (pages_ > 1) {
+      page_ = 0;
+      dirty_ = true;
+    }
+  }
+
+  void show_day(int day) {
+    day_ = day;
+    page_ = 0;
+    page_at_ = now_;
+    asked_ = 0;
+    dirty_ = true;
+    day_guide_.films.clear();
+    if (day == 0) return;
+    JsonDocument request;
+    request["ask"] = DAY_COMMAND;
+    request["data"]["day"] = day;
+    asked_ = tessera::send(plugin_, request.as<JsonObjectConst>());
+    asked_at_ = now_;
+    if (!asked_) {
+      week_ = false;
+      day_ = 0;
+    }
+  }
+
   void render() {
-    const size_t first = guide_.first(now_);
-    const char *why = guide_.why(now_, first);
+    const Guide &guide = day_ ? day_guide_ : guide_;
+    const size_t first = day_ ? 0 : guide_.first(now_);
+    const char *why = day_ ? (asked_ ? "waiting" : guide.films.empty() ? "none_day" : nullptr) : guide_.why(now_, first);
     if (!dirty_ && first == first_ && why == why_) return;
     dirty_ = false;
     first_ = first;
     why_ = why;
-    // The pages: as many as the films still to come need. A film that ends can take a page away.
-    const size_t left = why ? 0 : guide_.films.size() - first;
+    // The pages: as many as the day's films (today: the ones still to come) need. A film that ends can take one away.
+    const size_t left = why ? 0 : guide.films.size() - first;
     pages_ = std::max<size_t>(1, (left + rows_.size() - 1) / rows_.size());
     if (page_ >= pages_) page_ = 0;
     if (!page_at_) page_at_ = now_;
     const size_t start = first + page_ * rows_.size();
-    // The line on top: the message, else that the guide is old and which page this is.
-    std::string note = why ? plugin_->text(why) : guide_.stale ? plugin_->text("old") : std::string();
-    if (pages_ > 1) {
-      const std::string page = tessera::fill(tessera::fill(plugin_->text("page"), "page", std::to_string(page_ + 1)).c_str(),
-                                             "pages", std::to_string(pages_));
-      note += (note.empty() ? "" : " · ") + page;
-    }
+    // The line on top: the day, the message or that the guide is old, and which page this is.
+    std::vector<std::string> parts;
+    if (now_ && (week_ || day_)) parts.push_back(tessera::date_text(now_ + static_cast<uint32_t>(day_) * 86400));
+    if (why)
+      parts.push_back(plugin_->text(why));
+    else if (day_ == 0 && guide_.stale)
+      parts.push_back(plugin_->text("old"));
+    if (pages_ > 1)
+      parts.push_back(tessera::fill(tessera::fill(plugin_->text("page"), "page", std::to_string(page_ + 1)).c_str(),
+                                    "pages", std::to_string(pages_)));
+    std::string note;
+    for (const auto &part : parts) note += (note.empty() ? "" : " · ") + part;
     ui::set_text(note_, note);
     ui::set_color(note_, theme::MUTED);
-    const int when_w = why ? 0 : std::min(when_width(guide_.films, start, rows_.size()), col_w_ / 3);
+    const int when_w = why ? 0 : std::min(when_width(guide.films, start, rows_.size()), col_w_ / 3);
     for (size_t i = 0; i < rows_.size(); ++i) {
-      if (why || start + i >= guide_.films.size()) {
+      if (why || start + i >= guide.films.size()) {
         rows_[i].place("", "", nullptr, 0, col_w_, line_);
       } else {
-        const Film &f = guide_.films[start + i];
+        const Film &f = guide.films[start + i];
         rows_[i].place(tessera::clock_text(f.at), f.title, &f, when_w, col_w_, line_);
       }
     }
   }
 
-  const tessera::Plugin *plugin_;
+  FilmStasera *plugin_;
   lv_obj_t *note_{};
-  int width_ = 0, line_ = 0, col_w_ = 0;
-  uint32_t now_ = 0, page_at_ = 0;   // page_at_: when the page on the glass came
-  bool dirty_ = true;
+  int width_ = 0, line_ = 0, col_w_ = 0, day_ = 0;
+  uint32_t now_ = 0, page_at_ = 0, asked_ = 0, asked_at_ = 0;   // page_at_: when the page on the glass came
+  bool dirty_ = true, week_ = true;
   size_t first_ = 0, page_ = 0, pages_ = 1;
   const char *why_ = nullptr;
   std::vector<Row> rows_;
-  Guide guide_;
+  Guide guide_, day_guide_;   // today (the tile's sensor), and the other day on the glass
 };
 
 void FilmStasera::setup() {
   // The id is the tile's id in the manifest; the core makes a FilmsTile for every card that shows one.
   add_tile("films", [this]() { return new FilmsTile(this); });
   add_card("movies", [this]() { return new FilmsCard(this); }, true);
+}
+
+void FilmStasera::on_message(JsonObjectConst message) {
+  if (open_card_) open_card_->answer(message);
 }
 
 }  // namespace esphome::film_stasera

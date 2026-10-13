@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0 - 2026-10-13
+- The card can show the whole week: after the last page of a day it turns to the next day, up to six days ahead, and
+  then back to today. The line on top says the day and the page. Back on another day returns to today.
+- For the week, add one sensor per day and the script `film_stasera_day` to Home Assistant (README, "The whole week").
+  Without them the card shows today, as before.
+- A day can now hold up to 40 films instead of 20. The tile needs a little more room in the screen's layout memory
+  (11500 instead of 9000 bytes).
+- The card's first page now stays its whole 8 seconds; in 0.2.5 it could turn almost at once.
+
 ## 0.2.5 - 2026-10-13
 - The card now shows every film still to come: when they do not fit on one page, it turns to the next page by itself
   every 8 seconds and starts again after the last. The line on top says which page it shows ("Page 1 of 3").
