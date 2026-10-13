@@ -6,7 +6,7 @@
     "waiting": "In attesa della guida",
     "choose_sensor": "Scegli il sensore dei film",
     "old": "Guida vecchia",
-    "more": "Ancora 1 film | Altri {n} film"
+    "page": "Pagina {page} di {pages}"
   },
   "app": {
     "name": "Film stasera",

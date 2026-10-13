@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.5 - 2026-10-13
+- The card now shows every film still to come: when they do not fit on one page, it turns to the next page by itself
+  every 8 seconds and starts again after the last. The line on top says which page it shows ("Page 1 of 3").
+  Tessera's cards take no taps yet, so there are no buttons to turn the pages.
+
 ## 0.2.4 - 2026-10-13
 - The card no longer scrolls, which made it slow: the films are laid out on the card in columns (up to three on a wide
   screen), and when more are left than fit, the line on top says how many.

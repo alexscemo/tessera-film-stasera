@@ -1,3 +1,5 @@
 .preview/
 __pycache__/
 *.pyc
+tools/preston_cinemas.py
+tools/output.json

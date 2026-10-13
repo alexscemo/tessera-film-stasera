@@ -19,6 +19,8 @@ struct Film {
 static constexpr uint32_t ON_AIR_SECONDS = 150 * 60;
 static constexpr int MAX_PER_COLUMN = 8;
 static constexpr size_t MAX_FILMS = 20;
+// How long the card shows a page of films before it turns to the next one, when they do not fit on one page.
+static constexpr uint32_t PAGE_SECONDS = 8;
 
 // What the sensor says, read the same way by the tile and the card.
 struct Guide {
@@ -275,8 +277,9 @@ class FilmsTile : public tessera::Tile {
 };
 
 // The card: the films still to come on a fixed grid as large as the card, in up to three columns that fill one after
-// the other, with a line on top that says what is not there (the guide is old, more films than fit). Nothing scrolls,
-// and the rows are laid out again only when what they show changes, not on every tick of the clock.
+// the other, with a line on top that says the guide is old and which page shows. Nothing scrolls: when the films do not
+// fit on one page, the card turns to the next page every PAGE_SECONDS and starts again after the last (a card takes no
+// taps). The rows are laid out again only when what they show changes, not on every tick of the clock.
 class FilmsCard : public tessera::Card {
  public:
   explicit FilmsCard(const tessera::Plugin *plugin) : plugin_(plugin) {}
@@ -310,6 +313,11 @@ class FilmsCard : public tessera::Card {
 
   void on_tick(uint32_t now) override {
     now_ = now;
+    if (pages_ > 1 && now && now - page_at_ >= PAGE_SECONDS) {
+      page_ = (page_ + 1) % pages_;
+      page_at_ = now;
+      dirty_ = true;
+    }
     render();
   }
 
@@ -326,19 +334,27 @@ class FilmsCard : public tessera::Card {
     dirty_ = false;
     first_ = first;
     why_ = why;
-    // The line on top: the message, else what the grid leaves out.
+    // The pages: as many as the films still to come need. A film that ends can take a page away.
     const size_t left = why ? 0 : guide_.films.size() - first;
-    const size_t more = left > rows_.size() ? left - rows_.size() : 0;
+    pages_ = std::max<size_t>(1, (left + rows_.size() - 1) / rows_.size());
+    if (page_ >= pages_) page_ = 0;
+    if (!page_at_) page_at_ = now_;
+    const size_t start = first + page_ * rows_.size();
+    // The line on top: the message, else that the guide is old and which page this is.
     std::string note = why ? plugin_->text(why) : guide_.stale ? plugin_->text("old") : std::string();
-    if (more) note += (note.empty() ? "" : " · ") + tessera::format(plugin_->text("more"), static_cast<long>(more));
+    if (pages_ > 1) {
+      const std::string page = tessera::fill(tessera::fill(plugin_->text("page"), "page", std::to_string(page_ + 1)).c_str(),
+                                             "pages", std::to_string(pages_));
+      note += (note.empty() ? "" : " · ") + page;
+    }
     ui::set_text(note_, note);
     ui::set_color(note_, theme::MUTED);
-    const int when_w = why ? 0 : std::min(when_width(guide_.films, first, rows_.size()), col_w_ / 3);
+    const int when_w = why ? 0 : std::min(when_width(guide_.films, start, rows_.size()), col_w_ / 3);
     for (size_t i = 0; i < rows_.size(); ++i) {
-      if (why || first + i >= guide_.films.size()) {
+      if (why || start + i >= guide_.films.size()) {
         rows_[i].place("", "", nullptr, 0, col_w_, line_);
       } else {
-        const Film &f = guide_.films[first + i];
+        const Film &f = guide_.films[start + i];
         rows_[i].place(tessera::clock_text(f.at), f.title, &f, when_w, col_w_, line_);
       }
     }
@@ -347,9 +363,9 @@ class FilmsCard : public tessera::Card {
   const tessera::Plugin *plugin_;
   lv_obj_t *note_{};
   int width_ = 0, line_ = 0, col_w_ = 0;
-  uint32_t now_ = 0;
+  uint32_t now_ = 0, page_at_ = 0;   // page_at_: when the page on the glass came
   bool dirty_ = true;
-  size_t first_ = 0;
+  size_t first_ = 0, page_ = 0, pages_ = 1;
   const char *why_ = nullptr;
   std::vector<Row> rows_;
   Guide guide_;

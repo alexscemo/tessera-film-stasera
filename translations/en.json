@@ -6,7 +6,7 @@
     "waiting": "Waiting for the guide",
     "choose_sensor": "Choose the film sensor",
     "old": "Old guide",
-    "more": "1 more film | {n} more films"
+    "page": "Page {page} of {pages}"
   },
   "app": {
     "name": "Films tonight",
